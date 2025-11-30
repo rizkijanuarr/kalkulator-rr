@@ -3,293 +3,423 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lot Size Calculator (XAUUSD)</title>
   <link rel="icon" type="image/webp" href="logo.webp">
-  <title>Kalkulator RR 1:3</title>
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       font-family: 'Comic Neue', cursive;
       background: #f7f7f7;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px 0;
+      padding: 20px;
       margin: 0;
     }
-
-    .container {
+    .dashboard {
       background: white;
       border: 2px solid black;
       border-radius: 10px;
-      padding: 24px 20px;
-      width: 340px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
       box-shadow: 3px 3px 0 black;
     }
-
-    h2 {
-      margin-top: 0;
-      font-size: 20px;
+    h2 { margin-top: 0; font-size: 20px; text-align: center; }
+    .note { font-size: 13px; color: #666; margin-bottom: 15px; text-align: center; }
+    
+    /* Header Actions */
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
+    .add-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4caf50;
+      color: white;
+      transition: 0.2s;
+    }
+    .add-btn:hover { transform: scale(1.03); }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-count-badge {
+      background: #ff0000;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .reset-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #f44336;
+      color: white;
+      transition: 0.2s;
+    }
+    .reset-btn:hover { background: #d32f2f; }
+    .export-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #4caf50;
+      color: white;
+      transition: 0.2s;
+    }
+    .export-btn:hover { background: #388e3c; }
 
-    .note {
+    /* Filter Row */
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    .filter-select {
+      padding: 8px 12px;
+      border: 2px solid black;
+      border-radius: 6px;
       font-size: 13px;
-      color: #666;
-      margin-bottom: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      width: auto;
+      max-width: 140px;
+      height: 38px;
+      box-sizing: border-box;
+    }
+    input[type="date"].filter-select {
+      width: 140px;
     }
 
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      border: 2px solid black;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+    }
+    tr:hover { background: #f9f9f9; }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .badge-buy { background: #d4f8d4; color: #2e7d32; }
+    .badge-sell { background: #ffe4e4; color: #c62828; }
+    .badge-tp { background: #4caf50; color: white; }
+    .badge-sl { background: #f44336; color: white; }
+    .badge-pending { background: #ff9800; color: white; }
+    .detail-btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      border: 1.5px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2196f3;
+      color: white;
+      transition: 0.2s;
+    }
+    .detail-btn:hover { transform: scale(1.05); }
+    .empty-table {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+      font-style: italic;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .page-btn {
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #f5f5f5;
+      transition: 0.2s;
+    }
+    .page-btn:hover { background: #e0e0e0; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .page-info {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* POPUP STYLES */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .popup-overlay.show { display: flex; }
+    .popup-content {
+      background: white;
+      border: 2px solid black;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 3px 3px 0 black;
+      animation: popIn 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .popup-header h3 { margin: 0; font-size: 18px; }
+    .popup-close { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; line-height: 1; }
+    
+    /* Form */
+    label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px; }
     input {
       width: 100%;
       padding: 8px;
       border: 2px solid black;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 14px;
       text-align: center;
       margin-bottom: 10px;
-      display: block;
     }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      font-size: 16px;
+    input:focus { outline: none; border-color: #4caf50; }
+    .type-buttons { display: flex; gap: 8px; margin-bottom: 10px; }
+    .type-btn {
+      flex: 1;
+      padding: 8px 0;
+      font-size: 13px;
       font-weight: bold;
       border: 2px solid black;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       transition: 0.2s;
-      padding: 8px 0;
+      background: #f0f0f0;
+      color: #999;
     }
-
-    button:hover {
-      transform: scale(1.03);
-    }
-
-    .buy {
-      background: #d4f8d4;
-    }
-
-    .sell {
-      background: #ffe4e4;
-    }
-
-    #result {
-      margin-top: 20px;
-      font-size: 15px;
-      text-align: center;
-      border-top: 2px dashed #aaa;
-      padding-top: 8px;
-    }
-
-    /* ==================== RIWAYAT ==================== */
-    #historyContainer {
-      margin-top: 20px;
-      border: 2px solid black;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fff;
-    }
-
-    #historyHeader {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      cursor: pointer;
-      padding: 2px 2px;
-    }
-
-    #historyHeader .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #historyHeader h3 {
-      margin: 0;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .history-count {
-      background: #ff0000;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    #resetBtn {
-      font-size: 12px;
-      border: 1.5px solid black;
-      border-radius: 6px;
-      background: #f8f8f8;
-      cursor: pointer;
-      padding: 4px 10px;
-      font-family: inherit;
-      transition: all 0.2s;
-      flex-shrink: 0;
-      width: auto;
-    }
-
-    #resetBtn:hover {
-      background: #e0e0e0;
-    }
-
-    /* Collapse animation */
-    #historyList {
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-      max-height: 0;
-      opacity: 0;
-    }
-
-    #historyList.show {
-      max-height: 500px;
-      opacity: 1;
-      overflow-y: auto;
-    }
-
-    /* Items */
-    .history-item {
-      border: 2px solid black;
-      border-radius: 10px;
-      padding: 8px;
-      margin-bottom: 10px;
-      transition: transform 0.2s ease, opacity 0.4s ease;
-      cursor: pointer;
-      opacity: 0;
-      animation: fadeIn 0.4s ease forwards;
-    }
-
-    .history-item:hover {
-      transform: scale(1.02);
-    }
-
-    .buy-item {
-      background: #d4f8d4;
-    }
-
-    .sell-item {
-      background: #ffe4e4;
-    }
-
-    .top-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .index {
-      font-weight: bold;
-      font-size: 1.1em;
-    }
-
-    .time {
-      font-size: 0.85em;
-      opacity: 0.8;
-    }
-
-    .empty-message {
-      text-align: center;
-      color: #777;
-      font-size: 14px;
-      font-style: italic;
-      padding: 16px 0;
-    }
-
-    /* Panah */
-    #arrowIcon {
-      display: inline-block;
-      transition: transform 0.3s ease;
-      font-size: 16px;
-    }
-
-    #arrowIcon.rotate {
-      transform: rotate(90deg);
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(5px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Footer */
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
-      color: #333;
-    }
-
-    .footer a {
-      color: #333;
-      text-decoration: none;
-      position: relative;
-      display: inline-block;
-    }
-
-    .footer a::after {
-      content: '';
-      position: absolute;
-      width: 0;
-      height: 2px;
-      bottom: -2px;
-      left: 0;
-      background-color: #000;
-      transition: width 0.3s ease;
-    }
-
-    .footer a:hover::after {
+    .type-btn.buy-btn.active { background: #4caf50; color: white; }
+    .type-btn.sell-btn.active { background: #f44336; color: white; }
+    .calculate-btn {
       width: 100%;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #4caf50;
+      color: white;
+      transition: 0.2s;
+      margin-top: 5px;
     }
+    .calculate-btn:hover { transform: scale(1.02); }
+    .result-box {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .warning { color: #e67e22; font-weight: bold; }
+
+    /* Detail Popup */
+    .popup-data { font-size: 13px; margin-bottom: 15px; line-height: 1.8; }
+    .popup-data div { margin-bottom: 3px; }
+    .result-buttons { display: flex; gap: 10px; margin-bottom: 12px; }
+    .result-btn {
+      flex: 1;
+      padding: 10px 0;
+      font-size: 13px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      background: #f0f0f0;
+      color: #999;
+    }
+    .result-btn.tp-btn.active { background: #4caf50; color: white; }
+    .result-btn.sl-btn.active { background: #f44336; color: white; }
+    .update-btn {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+      border: 2px solid black;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2196f3;
+      color: white;
+      transition: 0.2s;
+    }
+    .update-btn:hover { transform: scale(1.02); }
+
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #333; }
+    .footer a { color: #333; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h2>💹 Kalkulator RR 1:3</h2>
-    <div class="note">Hitung harga TP & SL otomatis — biar kamu fokus di entry 🌿</div>
+  <div class="dashboard">
+    <h2>💰 Lot Size Calculator (XAUUSD)</h2>
+    <div class="note">Hitung lot size ideal berdasarkan risk management 📊</div>
 
-    <input id="priceInput" type="number" placeholder="Example: 2039" />
-
-    <div class="buttons">
-      <button class="buy" onclick="calculateRR('BUY')">BUY</button>
-      <button class="sell" onclick="calculateRR('SELL')">SELL</button>
+    <div class="header-actions">
+      <button class="add-btn" onclick="openAddPopup()">+ Tambah Data</button>
+      <div class="header-right">
+        <!-- <span class="history-count-badge" id="historyCount">0</span> -->
+        <!-- <button class="reset-btn" onclick="resetHistory()">Reset</button> -->
+        <button class="export-btn" onclick="exportToExcel()">📊 Export</button>
+      </div>
     </div>
 
-    <div id="result"></div>
+    <div class="filter-row">
+      <select class="filter-select" id="filterType" onchange="applyFilter()">
+        <option value="">Semua Type</option>
+        <option value="BUY">BUY</option>
+        <option value="SELL">SELL</option>
+      </select>
+      <select class="filter-select" id="filterStatus" onchange="applyFilter()">
+        <option value="">Semua Status</option>
+        <option value="pending">Pending</option>
+        <option value="TP">TP</option>
+        <option value="SL">SL</option>
+      </select>
+      <input type="date" class="filter-select" id="filterStartDate" onchange="applyFilter()" placeholder="Start Date" />
+      <input type="date" class="filter-select" id="filterEndDate" onchange="applyFilter()" placeholder="End Date" />
+    </div>
 
-    <!-- RIWAYAT -->
-    <div id="historyContainer">
-      <div id="historyHeader" onclick="toggleHistory()">
-        <div class="header-left">
-          <span id="arrowIcon">▶️</span>
-          <h3><span class="history-count" id="historyCount">0</span> Riwayat</h3>
-        </div>
-        <button id="resetBtn" onclick="resetHistory(event)">Reset</button>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Entry</th>
+            <th>Lot</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="7" class="empty-table">Belum ada data</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button class="page-btn" id="prevBtn" onclick="prevPage()">← Prev</button>
+      <span class="page-info" id="pageInfo">1 / 1</span>
+      <button class="page-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ADD POPUP -->
+  <div class="popup-overlay" id="addPopup" onclick="closeAddPopup(event)">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <div class="popup-header">
+        <h3>➕ Tambah Data</h3>
+        <button class="popup-close" onclick="closeAddPopup()">&times;</button>
       </div>
-      <div id="historyList" class="empty-message">Belum ada Data yang tersedia saat ini!</div>
+
+      <label>Balance ($)</label>
+      <input id="balance" type="number" value="10000" step="any" />
+
+      <label>Risk (%)</label>
+      <input id="risk" type="number" value="2" step="any" />
+
+      <label>Entry Price</label>
+      <input id="entry" type="number" step="any" placeholder="e.g. 4144.023" />
+
+      <label>Stop Loss Price</label>
+      <input id="sl" type="number" step="any" placeholder="e.g. 4180.304" />
+
+      <label>Take Profit Price</label>
+      <input id="tp" type="number" step="any" placeholder="e.g. 3950.399" />
+
+      <label>Date</label>
+      <input id="tradeDate" type="date" />
+
+      <label>Type</label>
+      <div class="type-buttons">
+        <button class="type-btn buy-btn active" onclick="selectType('BUY')">BUY</button>
+        <button class="type-btn sell-btn" onclick="selectType('SELL')">SELL</button>
+      </div>
+
+      <button class="calculate-btn" onclick="calculate()">Calculate & Save</button>
+
+      <div class="result-box" id="result" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- DETAIL POPUP -->
+  <div class="popup-overlay" id="detailPopup" onclick="closeDetailPopup(event)">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <div class="popup-header">
+        <h3>📋 Detail Trade</h3>
+        <button class="popup-close" onclick="closeDetailPopup()">&times;</button>
+      </div>
+      <div class="popup-data" id="popupData"></div>
+      <label>Hasil Trade:</label>
+      <div class="result-buttons">
+        <button class="result-btn tp-btn" onclick="selectResult('TP')">🎯 TP</button>
+        <button class="result-btn sl-btn" onclick="selectResult('SL')">💥 SL</button>
+      </div>
+      <button class="update-btn" onclick="updateHistory()">Update</button>
     </div>
   </div>
 
@@ -299,151 +429,341 @@
   </div>
 
   <script>
-    const historyList = document.getElementById("historyList");
     let historyData = [];
+    let selectedType = 'BUY';
+    let selectedResult = null;
+    let currentEditIndex = null;
+    let filterType = '';
+    let filterStatus = '';
+    let filterStartDate = '';
+    let filterEndDate = '';
+    let currentPage = 1;
+    const itemsPerPage = 5;
 
-    // Load history dari localStorage saat halaman dimuat
+    document.getElementById("tradeDate").valueAsDate = new Date();
+    loadHistory();
+
+    function applyFilter() {
+      filterType = document.getElementById('filterType').value;
+      filterStatus = document.getElementById('filterStatus').value;
+      filterStartDate = document.getElementById('filterStartDate').value;
+      filterEndDate = document.getElementById('filterEndDate').value;
+      currentPage = 1;
+      renderTable();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(getFilteredData().length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    }
+
+    function getFilteredData() {
+      return historyData.filter((item) => {
+        if (filterType && item.type !== filterType) return false;
+        if (filterStatus) {
+          if (filterStatus === 'pending' && item.result !== null) return false;
+          if (filterStatus === 'TP' && item.result !== 'TP') return false;
+          if (filterStatus === 'SL' && item.result !== 'SL') return false;
+        }
+        if (filterStartDate || filterEndDate) {
+          const itemDate = parseDate(item.date);
+          if (filterStartDate) {
+            const startDate = new Date(filterStartDate);
+            if (itemDate < startDate) return false;
+          }
+          if (filterEndDate) {
+            const endDate = new Date(filterEndDate);
+            endDate.setHours(23, 59, 59);
+            if (itemDate > endDate) return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    function selectType(type) {
+      selectedType = type;
+      document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(type === 'BUY' ? '.buy-btn' : '.sell-btn').classList.add('active');
+    }
+
+    function selectResult(result) {
+      selectedResult = result;
+      document.querySelectorAll('.result-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(result === 'TP' ? '.tp-btn' : '.sl-btn').classList.add('active');
+    }
+
+    function openAddPopup() {
+      document.getElementById("result").style.display = "none";
+      document.getElementById("addPopup").classList.add("show");
+    }
+
+    function closeAddPopup(event) {
+      if (event && event.target !== document.getElementById("addPopup")) return;
+      document.getElementById("addPopup").classList.remove("show");
+    }
+
+    function openDetailPopup(index) {
+      currentEditIndex = index;
+      const item = historyData[index];
+      selectedResult = item.result || null;
+
+      document.getElementById("popupData").innerHTML = `
+        <div><strong>Type:</strong> ${item.type}</div>
+        <div><strong>Date:</strong> ${item.date}</div>
+        <div><strong>Entry:</strong> ${item.entry}</div>
+        <div><strong>Stop Loss:</strong> ${item.sl}</div>
+        <div><strong>Take Profit:</strong> ${item.tp}</div>
+        <div><strong>SL Distance:</strong> ${item.slPoints || '-'} points</div>
+        <div><strong>TP Distance:</strong> ${item.tpPoints || '-'} points</div>
+        <div><strong>Lot Size:</strong> ${item.lotSize}</div>
+        <div><strong>Risk:</strong> ${item.riskPercent}%</div>
+        <div><strong>Potential Loss:</strong> $${item.potentialLoss}</div>
+        <div><strong>Potential Profit:</strong> $${item.potentialProfit}</div>
+      `;
+
+      const hasResult = item.result !== null;
+      document.querySelectorAll('.result-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.disabled = hasResult;
+        btn.style.opacity = hasResult ? '0.5' : '1';
+        btn.style.cursor = hasResult ? 'not-allowed' : 'pointer';
+      });
+      document.querySelector('.update-btn').disabled = hasResult;
+      document.querySelector('.update-btn').style.opacity = hasResult ? '0.5' : '1';
+      document.querySelector('.update-btn').style.cursor = hasResult ? 'not-allowed' : 'pointer';
+
+      if (selectedResult === 'TP') {
+        document.querySelector('.tp-btn').classList.add('active');
+      } else if (selectedResult === 'SL') {
+        document.querySelector('.sl-btn').classList.add('active');
+      }
+
+      document.getElementById("detailPopup").classList.add("show");
+    }
+
+    function closeDetailPopup(event) {
+      if (event && event.target !== document.getElementById("detailPopup")) return;
+      document.getElementById("detailPopup").classList.remove("show");
+      currentEditIndex = null;
+      selectedResult = null;
+    }
+
     function loadHistory() {
-      const saved = localStorage.getItem('rrHistory');
+      const saved = localStorage.getItem('lotSizeHistory');
       if (saved) {
         historyData = JSON.parse(saved);
-        if (historyData.length > 0) {
-          historyList.classList.remove("empty-message");
-          historyList.innerHTML = "";
-          historyData.forEach((item, idx) => {
-            renderHistoryItem(item, historyData.length - idx);
-          });
-        }
       }
+      renderTable();
       updateHistoryCount();
     }
 
-    // Update jumlah history
+    function saveHistory() {
+      localStorage.setItem('lotSizeHistory', JSON.stringify(historyData));
+    }
+
     function updateHistoryCount() {
       document.getElementById('historyCount').textContent = historyData.length;
     }
 
-    // Simpan history ke localStorage
-    function saveHistory() {
-      localStorage.setItem('rrHistory', JSON.stringify(historyData));
-    }
-
-    // Render satu item history
-    function renderHistoryItem(item, index) {
-      const div = document.createElement("div");
-      div.classList.add("history-item", item.type === "BUY" ? "buy-item" : "sell-item");
-      div.innerHTML = `
-        <div class="top-line">
-          <div class="index">${index}</div>
-          <div class="time">${item.time}</div>
-        </div>
-        <div>Entry : ${item.entry}</div>
-        <div>🎯 TP : ${item.tp}</div>
-        <div>💥 SL : ${item.sl}</div>
-      `;
-      historyList.prepend(div);
-    }
-
-    function addToHistory(type, entry, tp, sl) {
-      // Hapus pesan kosong kalau ada
-      if (historyList.classList.contains("empty-message")) {
-        historyList.classList.remove("empty-message");
-        historyList.innerHTML = "";
+    function parseDate(dateStr) {
+      // Parse date from "dd/mm/yyyy" format
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        return new Date(parts[2], parts[1] - 1, parts[0]);
       }
-
-      const now = new Date();
-      const time = now.toLocaleString("id-ID", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      const newItem = { type, entry, tp, sl, time };
-      historyData.push(newItem);
-      saveHistory();
-      updateHistoryCount();
-
-      renderHistoryItem(newItem, historyData.length);
+      return new Date(dateStr);
     }
 
-    function calculateRR(type) {
-      const input = parseFloat(document.getElementById("priceInput").value);
-      if (isNaN(input)) {
-        alert("Masukkan angka yang valid, bro 😅");
+    function renderTable() {
+      const tbody = document.getElementById("tableBody");
+      const filteredData = getFilteredData();
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+      
+      // Update pagination info
+      document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+
+      // Hide/Show pagination buttons
+      document.getElementById('prevBtn').style.display = currentPage === 1 ? 'none' : 'block';
+      document.getElementById('nextBtn').style.display = currentPage === totalPages ? 'none' : 'block';
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-table">Belum ada data</td></tr>';
         return;
       }
 
-      let entry = input / 1000;
-      let tp, sl;
+      // Get paginated data
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = startIdx + itemsPerPage;
+      const paginatedData = filteredData.slice().reverse().slice(startIdx, endIdx);
 
-      if (type === "SELL") {
-        tp = (input - 30) / 1000;
-        sl = (input + 15) / 1000;
-      } else {
-        tp = (input + 30) / 1000;
-        sl = (input - 15) / 1000;
-      }
+      tbody.innerHTML = paginatedData.map((item) => {
+        const idx = historyData.indexOf(item);
+        const displayIdx = historyData.length - idx;
+        const typeBadge = item.type === 'BUY' ? 'badge-buy' : 'badge-sell';
+        let statusBadge = '<span class="badge badge-pending">Pending</span>';
+        if (item.result === 'TP') statusBadge = '<span class="badge badge-tp">TP</span>';
+        if (item.result === 'SL') statusBadge = '<span class="badge badge-sl">SL</span>';
 
-      const result = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-          <tr style="border-bottom: 2px solid #ddd;">
-            <th style="text-align: left; padding: 8px; font-weight: bold; width: 40%;">Tipe</th>
-            <th style="text-align: right; padding: 8px; font-weight: bold; width: 60%;">Harga</th>
-          </tr>
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 8px; display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-block; width: 12px; height: 12px; background: #4caf50; border-radius: 50%;"></span>
-              <span>Entry</span>
-            </td>
-            <td style="text-align: right; padding: 8px; font-weight: bold;">${entry.toFixed(3)}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 8px; display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-block; width: 12px; height: 12px; background: #f44336; border-radius: 50%;"></span>
-              <span>SL</span>
-            </td>
-            <td style="text-align: right; padding: 8px; font-weight: bold;">${sl.toFixed(3)}</td>
-          </tr>
+        return `
           <tr>
-            <td style="padding: 8px; display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-block; width: 12px; height: 12px; background: #2196f3; border-radius: 50%;"></span>
-              <span>TP</span>
-            </td>
-            <td style="text-align: right; padding: 8px; font-weight: bold;">${tp.toFixed(3)}</td>
+            <td>${displayIdx}</td>
+            <td>${item.date}</td>
+            <td><span class="badge ${typeBadge}">${item.type}</span></td>
+            <td>${item.entry}</td>
+            <td>${item.lotSize}</td>
+            <td>${statusBadge}</td>
+            <td><button class="detail-btn" onclick="openDetailPopup(${idx})">Detail</button></td>
           </tr>
-        </table>
-      `;
-
-      document.getElementById("result").innerHTML = result;
-      addToHistory(type, entry.toFixed(3), tp.toFixed(3), sl.toFixed(3));
+        `;
+      }).join('');
     }
 
-    function toggleHistory() {
-      const list = document.getElementById("historyList");
-      const arrow = document.getElementById("arrowIcon");
-
-      if (list.classList.contains("show")) {
-        list.classList.remove("show");
-        arrow.classList.remove("rotate");
-      } else {
-        list.classList.add("show");
-        arrow.classList.add("rotate");
-      }
+    function updateHistory() {
+      if (currentEditIndex === null || selectedResult === null) return;
+      historyData[currentEditIndex].result = selectedResult;
+      saveHistory();
+      renderTable();
+      closeDetailPopup();
     }
 
-    function resetHistory(event) {
-      event.stopPropagation();
+    function resetHistory() {
+      if (!confirm('Yakin ingin menghapus semua data?')) return;
       historyData = [];
-      localStorage.removeItem('rrHistory');
-      historyList.innerHTML = `<div class="empty-message">Belum ada Data yang tersedia saat ini!</div>`;
-      historyList.classList.add("empty-message");
+      localStorage.removeItem('lotSizeHistory');
+      renderTable();
       updateHistoryCount();
     }
 
-    // Load history saat halaman pertama kali dimuat
-    loadHistory();
+    function exportToExcel() {
+      const filteredData = getFilteredData();
+      
+      if (filteredData.length === 0) {
+        alert('Tidak ada data untuk di-export!');
+        return;
+      }
+
+      // Get current page data only
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = startIdx + itemsPerPage;
+      const pageData = filteredData.slice().reverse().slice(startIdx, endIdx);
+
+      // Create CSV content
+      const headers = ['No', 'Date', 'Type', 'Entry', 'SL', 'TP', 'SL Points', 'TP Points', 'Lot Size', 'Risk %', 'Potential Loss', 'Potential Profit', 'Result'];
+      const rows = pageData.map((item) => {
+        const idx = historyData.indexOf(item);
+        return [
+          historyData.length - idx,
+          item.date,
+          item.type,
+          item.entry,
+          item.sl,
+          item.tp,
+          item.slPoints || '',
+          item.tpPoints || '',
+          item.lotSize,
+          item.riskPercent,
+          item.potentialLoss,
+          item.potentialProfit,
+          item.result || 'Pending'
+        ];
+      });
+
+      let csvContent = headers.join(',') + '\n';
+      rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+      });
+
+      // Download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `trade_history_page${currentPage}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function calculate() {
+      const balance = parseFloat(document.getElementById("balance").value);
+      const riskPercent = parseFloat(document.getElementById("risk").value);
+      const entry = parseFloat(document.getElementById("entry").value);
+      const sl = parseFloat(document.getElementById("sl").value);
+      const tp = parseFloat(document.getElementById("tp").value);
+
+      if (!balance || !riskPercent || !entry || !sl || !tp) {
+        alert("Mohon isi semua field dengan benar!");
+        return;
+      }
+
+      const riskUSD = balance * (riskPercent / 100);
+      const slDistance = Math.abs(entry - sl);
+      const tpDistance = Math.abs(tp - entry);
+      const slPoints = Math.round(slDistance * 1000);
+      const tpPoints = Math.round(tpDistance * 1000);
+      const riskRewardRatio = tpDistance / slDistance;
+
+      const valuePerPointPerLot = 0.10;
+      const minLot = 0.01;
+      const lotSizeRaw = riskUSD / (slPoints * valuePerPointPerLot);
+      let lotSize = Math.round(lotSizeRaw * 100) / 100;
+
+      let warning = '';
+      if (lotSize < minLot) {
+        warning = '<span class="warning">⚠️ Lot terlalu kecil! Min 0.01</span><br>';
+        lotSize = minLot;
+      }
+
+      const potentialLoss = slPoints * valuePerPointPerLot * lotSize;
+      const potentialProfit = tpPoints * valuePerPointPerLot * lotSize;
+
+      const resultBox = document.getElementById("result");
+      resultBox.style.display = "block";
+      resultBox.innerHTML = warning +
+        `<strong>${selectedType}</strong><br>` +
+        `SL: ${slPoints} pts | TP: ${tpPoints} pts<br>` +
+        `RR = 1:${riskRewardRatio.toFixed(2)}<br>` +
+        `Loss: $${potentialLoss.toFixed(2)} | Profit: $${potentialProfit.toFixed(2)}<br>` +
+        `<strong>Lot Size: ${lotSize.toFixed(2)}</strong>`;
+
+      const tradeDate = document.getElementById("tradeDate").value;
+      const formattedDate = tradeDate ? new Date(tradeDate).toLocaleDateString("id-ID") : new Date().toLocaleDateString("id-ID");
+
+      historyData.push({
+        type: selectedType,
+        date: formattedDate,
+        entry: entry.toFixed(3),
+        sl: sl.toFixed(3),
+        tp: tp.toFixed(3),
+        slPoints,
+        tpPoints,
+        lotSize: lotSize.toFixed(2),
+        riskPercent,
+        potentialLoss: potentialLoss.toFixed(2),
+        potentialProfit: potentialProfit.toFixed(2),
+        result: null
+      });
+
+      saveHistory();
+      renderTable();
+      updateHistoryCount();
+
+      document.getElementById("entry").value = "";
+      document.getElementById("sl").value = "";
+      document.getElementById("tp").value = "";
+    }
   </script>
 </body>
 </html>
